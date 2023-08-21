@@ -72,4 +72,3 @@ uint32_t readADC_Cal(int ADC_Raw)
   //Conversión directa del valor ADC en voltaje utilizando la calibración ADC del ESP32 
   return esp_adc_cal_raw_to_voltage(ADC_Raw, &adc_chars);
 }
-//¿Se lee?
