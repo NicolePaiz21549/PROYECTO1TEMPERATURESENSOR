@@ -1,16 +1,11 @@
-//Parte 1 - Sensor de Temperatura
-/*Se implementó un promedio mediante el uso de un array para almacenar múltiples lecturas de ADC calculando así
-el promedio, lo que permite reducir el ruido y así las lecturas de temperatura son más uniformes*/
 #include <Arduino.h>
 #include <esp_adc_cal.h>
 
 #define LM35_GPIO_PIN 35
 #define BUTTON_PIN 13
-int LM35_Input = 0;
-float TempC = 0.0;
-float TempF = 0.0;
-float Voltage = 0.0;
-bool buttonPressed = false;
+
+// Variables for tracking temperature changes
+float lastTempC = 0.0;
 
 // Prototipo de función para readADC_Cal
 uint32_t readADC_Cal(int ADC_Raw);
@@ -23,31 +18,33 @@ void setup()
 
 void loop()
 {
-  if (digitalRead(BUTTON_PIN) == LOW)
-  {
-    if (!buttonPressed)
-    {
-      buttonPressed = true;
-      LM35_Input = analogRead(LM35_GPIO_PIN);
-      Voltage = readADC_Cal(LM35_Input);
-      TempC = ((Voltage/4095)*3.3)/0.01; //Conversión para dar la temperatura en ℃
-      TempF = (TempC * 1.8) + 32;
+  uint32_t LM35_Input = analogRead(LM35_GPIO_PIN);
+  float Voltage = readADC_Cal(LM35_Input);
+  float TempC = ((Voltage / 4095) * 3.3) / 0.01; // Conversion for temperature in °C
+
+  // Continuous monitoring of temperature fluctuations
+  if (abs(TempC - lastTempC) >= 0.2) { // Adjust the threshold as needed
+    lastTempC = TempC;
+    Serial.print("Temperature change detected: ");
+    Serial.print("Temperature in °C = ");
+    Serial.println(TempC);
+  }
+
+  // Check for button press and capture temperature snapshot
+  if (digitalRead(BUTTON_PIN) == LOW) {
+    delay(50); // Debounce delay
+    if (digitalRead(BUTTON_PIN) == LOW) { // Ensure stable button press
+      Serial.print("Button pressed - Temperature snapshot: ");
       Serial.print("Temperature in °C = ");
-      Serial.print(TempC);
-      Serial.print(",  Temperature in °F = ");
-      Serial.println(TempF);
+      Serial.println(TempC);
+      delay(1000); // Delay to avoid repeated captures
     }
   }
-  else
-  {
-    buttonPressed = false;
-  }
 }
-
 // Definición de la función readADC_Cal
 uint32_t readADC_Cal(int ADC_Raw)
 {
   esp_adc_cal_characteristics_t adc_chars;
   esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
-  return(esp_adc_cal_raw_to_voltage(ADC_Raw, &adc_chars));
+  return (esp_adc_cal_raw_to_voltage(ADC_Raw, &adc_chars));
 }
