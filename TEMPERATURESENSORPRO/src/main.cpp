@@ -20,11 +20,9 @@ esp_adc_cal_characteristics_t adc_chars;
 // Prototyping readADC_Cal function
 uint32_t readADC_Cal(int ADC_Raw);
 
-// Refresh interval and temperature change threshold
-const unsigned long refreshInterval = 5000; // Refresh every 5 seconds
-const float tempChangeThreshold = 0.2; // Temperature change threshold in °C
-unsigned long lastRefreshTime = 0;
-float lastTempC = 0.0;
+// Refresh interval and minimum button press delay
+const unsigned long minButtonPressDelay = 1000; // Minimum 1 second between presses
+unsigned long lastButtonPressTime = 0;
 
 void setup()
 {
@@ -44,10 +42,10 @@ void loop()
 
   if (digitalRead(BUTTON_PIN) == LOW)
   {
-    if (!buttonPressed && currentTime - lastRefreshTime >= refreshInterval)
+    if (!buttonPressed && currentTime - lastButtonPressTime >= minButtonPressDelay)
     {
       buttonPressed = true;
-      lastRefreshTime = currentTime;
+      lastButtonPressTime = currentTime;
 
       total = total - readings[readIndex];
       readings[readIndex] = analogRead(LM35_GPIO_PIN);
@@ -58,12 +56,8 @@ void loop()
       Voltage = readADC_Cal(LM35_Input);
       TempC = ((Voltage/4095)*3.3)/0.01;
 
-      // Check if temperature has changed significantly
-      if (abs(TempC - lastTempC) >= tempChangeThreshold) {
-        lastTempC = TempC;
-        Serial.print("Temperatura en °C = ");
-        Serial.print(TempC, 1);
-      }
+      Serial.print("Temperatura en °C = ");
+      Serial.print(TempC, 1);
     }
   }
   else
