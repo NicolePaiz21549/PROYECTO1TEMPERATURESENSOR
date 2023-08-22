@@ -1,73 +1,75 @@
+//Parte 1 - Sensor de Temperatura
+/*Se implementó un promedio mediante el uso de un array para almacenar múltiples lecturas de ADC calculando así
+el promedio, lo que permite reducir el ruido y así las lecturas de temperatura son más uniformes*/
 #include <Arduino.h>
-#include "driver/ledc.h"
-#include "esp_adc_cal.h"
+#include <esp_adc_cal.h>
 
-#define SNLM35 35
-#define BTN_TEMP 13 // Change this to the actual button pin number
-
-float TempC_LM35 = 0.0;
-int temp = 0;
-int placeValuesofTemp[4];
-
-unsigned long time_now = 0;
+#define LM35_GPIO_PIN 35
+#define BUTTON_PIN 13
+int LM35_Input = 0;
+float TempC = 0.0;
+//float TempF = 0.0;
+float Voltage = 0.0;
 bool buttonPressed = false;
-bool temperatureTaken = false;
-unsigned long lastButtonPressTime = 0;
-unsigned long debounceDelay = 50;
-bool displaysOn = false;
-int lastButtonState = HIGH;
 
-uint32_t readADC_Cal(int ADC_Raw) {
-  esp_adc_cal_characteristics_t adc_chars;
-  esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
-  return (esp_adc_cal_raw_to_voltage(ADC_Raw, &adc_chars));
-}
+// Variables para promediar las lecturas de temperaturas obtenidas
+//const int numReadings = 10; // Número de lecturas para promediar
+//int readings[numReadings];  // Array para almacenar las lecturas de temperaturas
+//int readIndex = 0;          // índice para la leer las lecturas de temperaturas en el array
+//long total = 0;             // Total acumulado de lecturas
 
-void setup() {
-  analogReadResolution(12);
+// Calibración ADC para ESP32
+esp_adc_cal_characteristics_t adc_chars;
 
-  pinMode(BTN_TEMP, INPUT_PULLUP);
+// Prototipo de función para readADC_Cal
+uint32_t readADC_Cal(int ADC_Raw);
 
+void setup()
+{
   Serial.begin(115200);
+  pinMode(BUTTON_PIN, INPUT_PULLUP);
+
+  // Inicialización de las lecturas del array
+  //for (int i = 0; i < numReadings; i++) {
+    //readings[i] = 0;
+  //}
+
+  // Inicialización de la calibración ADC para ESP32
+  esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
 }
 
-void loop() {
-  int reading = digitalRead(BTN_TEMP);
-  unsigned long currentTime = millis();
+void loop()
+{
+  if (digitalRead(BUTTON_PIN) == LOW)
+  {
+    if (!buttonPressed)
+    {
+      buttonPressed = true;
+      
+      // Lecturas promedio del ADC
+      //total = total - readings[readIndex];
+      //readings[readIndex] = analogRead(LM35_GPIO_PIN);
+      //total = total + readings[readIndex];
+      //readIndex = (readIndex + 1) % numReadings;
+      //LM35_Input = total / numReadings;
 
-  if (!displaysOn && reading == LOW) {
-    displaysOn = true;
-  }
+      Voltage = readADC_Cal(LM35_Input);
+      TempC = ((Voltage/4095)*3.3)/0.01; //Conversión para dar la temperatura en ℃
+      //TempC = Voltage/10;
 
-  if (displaysOn) {
-    if (reading != lastButtonState) {
-      lastButtonState = reading;
-
-      if (reading == LOW && (currentTime - lastButtonPressTime) > debounceDelay) {
-        lastButtonPressTime = currentTime;
-        
-        // Update temperature when the button is pressed again
-        temperatureTaken = false;
-      }
+      Serial.print("Temperatura en °C = ");
+      Serial.print(TempC, 1);
     }
   }
-
-  // Read and display the temperature if the button has been pressed
-  if (displaysOn && !temperatureTaken && reading == LOW) {
-    int SNLM35_Raw = analogRead(SNLM35);
-    float Voltage = readADC_Cal(SNLM35_Raw);
-    TempC_LM35 = Voltage / 10;
-
-    temp = TempC_LM35 * 100;
-
-    placeValuesofTemp[3] = ((temp) / 1) % 10;
-    placeValuesofTemp[2] = ((temp) / 10) % 10;
-    placeValuesofTemp[1] = ((temp) / 100) % 10;
-    placeValuesofTemp[0] = ((temp) / 1000) % 10;
-
-    Serial.print("Temperature: ");
-    Serial.println(TempC_LM35);
-    temperatureTaken = true;
+  else
+  {
+    buttonPressed = false;
   }
 }
 
+// Definición de la función readADC_Cal
+uint32_t readADC_Cal(int ADC_Raw)
+{
+  //Conversión directa del valor ADC en voltaje utilizando la calibración ADC del ESP32 
+  return esp_adc_cal_raw_to_voltage(ADC_Raw, &adc_chars);
+}
