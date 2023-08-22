@@ -53,6 +53,10 @@ void loop()
       readIndex = (readIndex + 1) % numReadings;
       LM35_Input = total / numReadings;
 
+      // Debug output: Print raw analog reading from LM35 sensor
+      Serial.print("Raw Analog Reading = ");
+      Serial.println(LM35_Input);
+
       Voltage = readADC_Cal(LM35_Input);
       TempC = ((Voltage/4095)*3.3)/0.01;
 
