@@ -37,7 +37,7 @@ void loop() {
       // Read LM35_ADC value
       LM35_Input = analogRead(LM35_GPIO_PIN);
       Voltage = readADC_Cal(LM35_Input);
-      TempC = ((Voltage / 4095.0) * 3.3) / 0.01;
+      TempC = ((Voltage / 4095) * 3.3) / 0.01;
 
       Serial.print("Temperatura en °C = ");
       Serial.print(TempC, 1);
