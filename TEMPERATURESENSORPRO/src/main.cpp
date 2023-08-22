@@ -17,7 +17,7 @@ uint32_t readADC_Cal(int ADC_Raw);
 
 void setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 }
 
@@ -30,7 +30,7 @@ void loop()
       buttonPressed = true;
       LM35_Input = analogRead(LM35_GPIO_PIN);
       Voltage = readADC_Cal(LM35_Input);
-      TempC = Voltage / 10;
+      TempC = ((Voltage/4095)*3.3)/0.01; //Conversión para dar la temperatura en ℃
       TempF = (TempC * 1.8) + 32;
       Serial.print("Temperature in °C = ");
       Serial.print(TempC);
