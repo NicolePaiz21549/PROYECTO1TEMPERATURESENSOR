@@ -13,10 +13,10 @@ float Voltage = 0.0;
 bool buttonPressed = false;
 
 // Variables para promediar las lecturas de temperaturas obtenidas
-const int numReadings = 10; // Número de lecturas para promediar
-int readings[numReadings];  // Array para almacenar las lecturas de temperaturas
-int readIndex = 0;          // índice para la leer las lecturas de temperaturas en el array
-long total = 0;             // Total acumulado de lecturas
+//const int numReadings = 10; // Número de lecturas para promediar
+//int readings[numReadings];  // Array para almacenar las lecturas de temperaturas
+//int readIndex = 0;          // índice para la leer las lecturas de temperaturas en el array
+//long total = 0;             // Total acumulado de lecturas
 
 // Calibración ADC para ESP32
 esp_adc_cal_characteristics_t adc_chars;
@@ -30,9 +30,9 @@ void setup()
   pinMode(BUTTON_PIN, INPUT_PULLUP);
 
   // Inicialización de las lecturas del array
-  for (int i = 0; i < numReadings; i++) {
-    readings[i] = 0;
-  }
+  //for (int i = 0; i < numReadings; i++) {
+    //readings[i] = 0;
+  //}
 
   // Inicialización de la calibración ADC para ESP32
   esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
@@ -47,11 +47,11 @@ void loop()
       buttonPressed = true;
       
       // Lecturas promedio del ADC
-      total = total - readings[readIndex];
-      readings[readIndex] = analogRead(LM35_GPIO_PIN);
-      total = total + readings[readIndex];
-      readIndex = (readIndex + 1) % numReadings;
-      LM35_Input = total / numReadings;
+      //total = total - readings[readIndex];
+      //readings[readIndex] = analogRead(LM35_GPIO_PIN);
+      //total = total + readings[readIndex];
+      //readIndex = (readIndex + 1) % numReadings;
+      //LM35_Input = total / numReadings;
 
       Voltage = readADC_Cal(LM35_Input);
       TempC = ((Voltage/4095)*3.3)/0.01; //Conversión para dar la temperatura en ℃
