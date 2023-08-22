@@ -54,7 +54,7 @@ void loop()
       //LM35_Input = total / numReadings;
 
       Voltage = readADC_Cal(LM35_Input);
-      TempC = ((Voltage/4095)*3.3)/0.01; //Conversión para dar la temperatura en ℃
+      TempC = ((Voltage/4095)*5)/0.01; //Conversión para dar la temperatura en ℃
       //TempC = Voltage/10;
 
       Serial.print("Temperatura en °C = ");
