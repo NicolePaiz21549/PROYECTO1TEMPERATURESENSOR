@@ -1,50 +1,73 @@
 #include <Arduino.h>
-#include <esp_adc_cal.h>
+#include "driver/ledc.h"
+#include "esp_adc_cal.h"
 
-#define LM35_GPIO_PIN 35
-#define BUTTON_PIN 13
+#define SNLM35 35
+#define BTN_TEMP 13 // Change this to the actual button pin number
 
-// Variables for tracking temperature changes
-float lastTempC = 0.0;
+float TempC_LM35 = 0.0;
+int temp = 0;
+int placeValuesofTemp[4];
 
-// Prototipo de función para readADC_Cal
-uint32_t readADC_Cal(int ADC_Raw);
+unsigned long time_now = 0;
+bool buttonPressed = false;
+bool temperatureTaken = false;
+unsigned long lastButtonPressTime = 0;
+unsigned long debounceDelay = 50;
+bool displaysOn = false;
+int lastButtonState = HIGH;
 
-void setup()
-{
-  Serial.begin(115200);
-  pinMode(BUTTON_PIN, INPUT_PULLUP);
-}
-
-void loop()
-{
-  uint32_t LM35_Input = analogRead(LM35_GPIO_PIN);
-  float Voltage = readADC_Cal(LM35_Input);
-  float TempC = ((Voltage / 4095) * 3.3) / 0.01; // Conversion for temperature in °C
-
-  // Continuous monitoring of temperature fluctuations
-  if (abs(TempC - lastTempC) >= 0.2) { // Adjust the threshold as needed
-    lastTempC = TempC;
-    Serial.print("Temperature change detected: ");
-    Serial.print("Temperature in °C = ");
-    Serial.println(TempC);
-  }
-
-  // Check for button press and capture temperature snapshot
-  if (digitalRead(BUTTON_PIN) == LOW) {
-    delay(50); // Debounce delay
-    if (digitalRead(BUTTON_PIN) == LOW) { // Ensure stable button press
-      Serial.print("Button pressed - Temperature snapshot: ");
-      Serial.print("Temperature in °C = ");
-      Serial.println(TempC);
-      delay(1000); // Delay to avoid repeated captures
-    }
-  }
-}
-// Definición de la función readADC_Cal
-uint32_t readADC_Cal(int ADC_Raw)
-{
+uint32_t readADC_Cal(int ADC_Raw) {
   esp_adc_cal_characteristics_t adc_chars;
   esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
   return (esp_adc_cal_raw_to_voltage(ADC_Raw, &adc_chars));
 }
+
+void setup() {
+  analogReadResolution(12);
+
+  pinMode(BTN_TEMP, INPUT_PULLUP);
+
+  Serial.begin(115200);
+}
+
+void loop() {
+  int reading = digitalRead(BTN_TEMP);
+  unsigned long currentTime = millis();
+
+  if (!displaysOn && reading == LOW) {
+    displaysOn = true;
+  }
+
+  if (displaysOn) {
+    if (reading != lastButtonState) {
+      lastButtonState = reading;
+
+      if (reading == LOW && (currentTime - lastButtonPressTime) > debounceDelay) {
+        lastButtonPressTime = currentTime;
+        
+        // Update temperature when the button is pressed again
+        temperatureTaken = false;
+      }
+    }
+  }
+
+  // Read and display the temperature if the button has been pressed
+  if (displaysOn && !temperatureTaken && reading == LOW) {
+    int SNLM35_Raw = analogRead(SNLM35);
+    float Voltage = readADC_Cal(SNLM35_Raw);
+    TempC_LM35 = Voltage / 10;
+
+    temp = TempC_LM35 * 100;
+
+    placeValuesofTemp[3] = ((temp) / 1) % 10;
+    placeValuesofTemp[2] = ((temp) / 10) % 10;
+    placeValuesofTemp[1] = ((temp) / 100) % 10;
+    placeValuesofTemp[0] = ((temp) / 1000) % 10;
+
+    Serial.print("Temperature: ");
+    Serial.println(TempC_LM35);
+    temperatureTaken = true;
+  }
+}
+
