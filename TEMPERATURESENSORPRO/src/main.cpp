@@ -35,7 +35,7 @@ void loop() {
       buttonPressed = true;
 
       // Read LM35_ADC value
-      TempC=((analogRead(LM35_GPIO_PIN)*4.88)/10);
+      TempC=analogRead(LM35_GPIO_PIN);
       
       //LM35_Input = analogRead(LM35_GPIO_PIN);
       //Voltage = readADC_Cal(LM35_Input);
