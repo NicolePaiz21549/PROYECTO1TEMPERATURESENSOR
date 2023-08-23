@@ -35,7 +35,8 @@ void loop() {
       buttonPressed = true;
 
       // Read LM35_ADC value
-      TempC=((analogRead(LM35_GPIO_PIN)+30)*(5000/4096)); //3 grados celsius
+      TempC=((analogRead(LM35_GPIO_PIN)+70)*(5000/4096)); //grados celsius de OFFSET
+      TempC=TempC/10;
       
       //LM35_Input = analogRead(LM35_GPIO_PIN);
       //Voltage = readADC_Cal(LM35_Input);
