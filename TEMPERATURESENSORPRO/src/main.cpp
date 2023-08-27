@@ -6,11 +6,7 @@
 int LM35_Input = 0;
 float TempC = 0.0;
 float Voltage = 0.0;
-//unsigned long time_now = 0;
 bool buttonPressed = false;
-//unsigned long lastButtonPressTime = 0;
-//unsigned long debounceDelay = 50;
-//int lastButtonState = HIGH;
 
 // Prototipo de función para readADC_Cal
 uint32_t readADC_Cal(int ADC_Raw) {
@@ -22,7 +18,7 @@ uint32_t readADC_Cal(int ADC_Raw) {
 void setup() {
   Serial.begin(115200);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
-  pinMode(LM35_GPIO_PIN, INPUT); // Initialize LM35 pin as input
+  pinMode(LM35_GPIO_PIN, INPUT); // Inicialización del pin LM35 como input
 }
 
 void loop() {
@@ -34,13 +30,10 @@ void loop() {
     {
       buttonPressed = true;
 
-      // Read LM35_ADC value
-      TempC=((analogRead(LM35_GPIO_PIN)+70)*(5000/4096)); //+ grados celsius de OFFSET para obtener un valor más precisos
-      TempC=TempC/10;
-      
-      //LM35_Input = analogRead(LM35_GPIO_PIN);
-      //Voltage = readADC_Cal(LM35_Input);
-      //TempC = ((Voltage / 4095) * 3.3) / 0.01;
+      // Lectura del valor LM35_ADC
+      TempC=((analogRead(LM35_GPIO_PIN)+70)*(5000/4096)); //Sumatoria de un valor de OFFSET para el valor análogo original multiplicado por el voltaje de 5V por pin Vin para la fórmula dividido la resolución ADC de 12bits
+      //+ grados celsius de OFFSET para obtener un valor más precisos
+      TempC=TempC/10; //División dentro de 10 representando los 10mV del LM35 ya que cada cambio de 10mV representa un cambio de 1℃
 
       Serial.print("Temperatura en °C = ");
       Serial.print(TempC);
