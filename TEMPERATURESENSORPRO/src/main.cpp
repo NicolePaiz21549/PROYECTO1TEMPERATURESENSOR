@@ -148,13 +148,14 @@ void loop() {
       Serial.print(TempC); //Impresión de backup
       Serial.println();
 
-      // Switch cases para LEDs y servo
+      // Condicionales para el comportamiento de los LEDs y el servo
       if (TempC < 37.0) {
         angle = servoPositionGreen;
         ledcWrite(redChannel, 0);
         ledcWrite(yellowChannel, 0);
         ledcWrite(greenChannel, 1);
       } else if (TempC >= 37.0 && TempC <= 37.5) {
+        angle = servoPositionYellow;
         ledcWrite(redChannel, 0);
         ledcWrite(greenChannel, 0);
         ledcWrite(yellowChannel, 1);
@@ -171,8 +172,5 @@ void loop() {
     buttonPressed = false;
   }
 }
-
-
-
 
 
