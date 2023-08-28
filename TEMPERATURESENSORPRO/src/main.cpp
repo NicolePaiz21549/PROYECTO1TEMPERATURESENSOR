@@ -31,7 +31,7 @@ void loop() {
       buttonPressed = true;
 
       // Lectura del valor LM35_ADC
-      TempC=((analogRead(LM35_GPIO_PIN)+70)*(5000.0/4096.0)); //Sumatoria de un valor de OFFSET para el valor análogo original multiplicado por el voltaje de 5V por pin Vin para la fórmula dividido la resolución ADC de 12bits
+      TempC=((analogRead(LM35_GPIO_PIN+70))*(5000.0/4096.0)); //Sumatoria de un valor de OFFSET para el valor análogo original multiplicado por el voltaje de 5V por pin Vin para la fórmula dividido la resolución ADC de 12bits
       //+ grados celsius de OFFSET para obtener un valor más precisos
       TempC=TempC/10.0; //División dentro de 10 representando los 10mV del LM35 ya que cada cambio de 10mV representa un cambio de 1℃
 
