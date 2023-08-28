@@ -2,7 +2,7 @@
 #include <esp_adc_cal.h>
 
 #define LM35_GPIO_PIN 35
-#define BUTTON_PIN 13
+#define BUTTON_PIN 33
 int LM35_Input = 0;
 float TempC = 0.0;
 float Voltage = 0.0;
