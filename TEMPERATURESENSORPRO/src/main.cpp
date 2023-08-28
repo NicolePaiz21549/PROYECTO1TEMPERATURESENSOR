@@ -39,7 +39,6 @@ bool buttonPressed = false;
 #define GREEN 18 //Case 0
 #define YELLOW 13 //Case 1
 
-
 //Canales para los LEDs con su color correspondiente
 #define redChannel 0 //Case 2
 #define greenChannel 1 //Case 0
@@ -111,6 +110,33 @@ void loop() {
   unsigned long currentTime = millis();
   int buttonState = digitalRead(BUTTON_PIN);
 
+      // Display de temperatura en displays de 7-segmentos (Todo el tiempo están encendidos los displays)
+      int tempInt = int(TempC);
+      int tempDecimal = int((TempC - tempInt) * 10);
+      int tempDecimalTens = tempInt / 10;
+      int tempDecimalUnits = tempInt % 10;
+
+      digitalWrite(display1, HIGH);
+      digitalWrite(display2, LOW);
+      digitalWrite(display3, LOW);
+      desplegarValor(tempDecimalTens);
+      delay(5);
+
+      digitalWrite(display1, LOW);
+      digitalWrite(display2, HIGH);
+      digitalWrite(display3, LOW);
+      desplegarValor(tempDecimalUnits);
+      desplegarPunto(true);
+      delay(5);
+
+      digitalWrite(display1, LOW);
+      digitalWrite(display2, LOW);
+      digitalWrite(display3, HIGH);
+      desplegarValor(tempDecimal);
+      desplegarPunto(false);
+      delay(5);
+
+
   if (digitalRead(BUTTON_PIN) == LOW) {
     if (!buttonPressed) {
       buttonPressed = true;
@@ -121,28 +147,6 @@ void loop() {
 
       Serial.print(TempC); //Impresión de backup
       Serial.println();
-
-      // Display de temperatura en displays de 7-segmentos
-      int tempInt = int(TempC);
-      digitalWrite(display1, HIGH);
-      digitalWrite(display2, LOW);
-      digitalWrite(display3, LOW);
-      desplegarValor(tempInt / 10);
-      delay(10);
-
-      digitalWrite(display1, LOW);
-      digitalWrite(display2, HIGH);
-      digitalWrite(display3, LOW);
-      desplegarValor(tempInt % 10);
-      desplegarPunto(true);
-      delay(10);
-
-      digitalWrite(display1, LOW);
-      digitalWrite(display2, LOW);
-      digitalWrite(display3, HIGH);
-      desplegarValor(int((TempC - tempInt) * 10));
-      desplegarPunto(false);
-      delay(10);
 
       // Switch cases para LEDs y servo
       if (TempC < 37.0) {
@@ -167,3 +171,8 @@ void loop() {
     buttonPressed = false;
   }
 }
+
+
+
+
+
