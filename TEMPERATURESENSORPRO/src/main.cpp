@@ -112,7 +112,7 @@ void loop() {
 
       // Display de temperatura en displays de 7-segmentos (Todo el tiempo están encendidos los displays)
       int tempInt = int(TempC);
-      int tempDecimal = int((TempC - tempInt) * 10);
+      int tempDecimal = int((TempC - tempInt) * 10); //Cálculo del decimal del valor de temperatura, lo multiplica por 10 para convertirlo en una fracción de 10 grados y almacena el resultado como un número entero en la variable tempDecimal.
       int tempDecimalTens = tempInt / 10;
       int tempDecimalUnits = tempInt % 10;
 
