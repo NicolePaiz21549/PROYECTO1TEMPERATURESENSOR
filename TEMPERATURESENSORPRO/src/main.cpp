@@ -47,15 +47,11 @@ bool buttonPressed = false;
 //Variables para el control del servo motor
 #define servoChannel 7 //Canal para el servo motor
 #define servoPin 2 //Pin del servo motor
+//#define angleStep 5 //Tamaño del paso para el cambio del ángulo
 
 //Variables generales
 int angle = 0; //Ángulo/posición inicial del servo (0: Verde, 1: Amarillo, 2: Rojo)
 int selectedColor = 0; //Variable para guardar el color seleccionado
-
-//Posición establecida del servo por color de LED
-#define servoPositionGreen 45 //Posición del servo para el LED verde
-#define servoPositionYellow 90 //Posición del servo para el LED amarillo
-#define servoPositionRed 135 //Posición del servo para el LED rojo
 
 //Prototipos de funciones
 //******************************************************************************************************************
@@ -149,23 +145,23 @@ void loop() {
 
       // Condicionales para el comportamiento de los LEDs y el servo
       if (TempC < 37.0) {
-        angle = servoPositionGreen;
+        angle = 45;
         ledcWrite(redChannel, 0);
         ledcWrite(yellowChannel, 0);
         ledcWrite(greenChannel, 1);
       } else if (TempC >= 37.0 && TempC <= 37.5) {
-        angle = servoPositionYellow;
+        angle = 90;
         ledcWrite(redChannel, 0);
         ledcWrite(greenChannel, 0);
         ledcWrite(yellowChannel, 1);
       } else {
-        angle = servoPositionRed;
+        angle = 130;
         ledcWrite(greenChannel, 0);
         ledcWrite(yellowChannel, 0);
         ledcWrite(redChannel, 1);      
 }
 
-      ledcWrite(servoChannel, map(angle, 0, 180, 0, 65535));
+      ledcWrite(servoChannel, 1638+map(angle, 0, 180, 0, 6226)); //Mapeado con OFFSET en la diferencia de operación del rango del servo del 2% al 12% del Duty Cycle
     }
   } else {
     buttonPressed = false;
