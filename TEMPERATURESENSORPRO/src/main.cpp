@@ -47,16 +47,15 @@ bool buttonPressed = false;
 //Variables para el control del servo motor
 #define servoChannel 7 //Canal para el servo motor
 #define servoPin 2 //Pin del servo motor
-//#define angleStep 5 //Tamaño del paso para el cambio del ángulo
 
 //Variables generales
 int angle = 0; //Ángulo/posición inicial del servo (0: Verde, 1: Amarillo, 2: Rojo)
 int selectedColor = 0; //Variable para guardar el color seleccionado
 
 //Posición establecida del servo por color de LED
-#define servoPositionGreen 9 //Posición del servo para el LED verde
-#define servoPositionYellow 13 //Posición del servo para el LED amarillo
-#define servoPositionRed 17 //Posición del servo para el LED rojo
+#define servoPositionGreen 45 //Posición del servo para el LED verde
+#define servoPositionYellow 90 //Posición del servo para el LED amarillo
+#define servoPositionRed 135 //Posición del servo para el LED rojo
 
 //Prototipos de funciones
 //******************************************************************************************************************
