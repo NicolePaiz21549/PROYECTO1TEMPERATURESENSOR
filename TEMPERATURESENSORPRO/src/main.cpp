@@ -15,9 +15,30 @@
 #define LM35_GPIO_PIN 35
 #define BUTTON_PIN 33 //Botón para grabar la lectura actual de temperatura
 int LM35_Input = 0;
+floa//**************************************
+//Dulce Nicole Monney Paiz, 21549
+//Proyecto 1 – Sensor de temperatura
+//BE3029 - Electrónica Digital 2
+//Librerías 
+//**************************************
+#include <Arduino.h>
+#include <esp_adc_cal.h>
+#include "display7.h"
+#include <driver/ledc.h>
+#include "AdafruitIO_WiFi.h"
+#include "config.h"
+
+//Definiciones
+//**************************************
+//Definiciones del sensor LM35
+#define LM35_GPIO_PIN 35
+#define BUTTON_PIN 33 //Botón para grabar la lectura actual de temperatura
+int LM35_Input = 0;
 float TempC = 0.0;
 float Voltage = 0.0;
 bool buttonPressed = false;
+unsigned long previousMillis = 0;  
+const long interval = 500;
 
 //Definiciones para los displays de 7 segmentos
 #define pA 17
@@ -53,8 +74,13 @@ bool buttonPressed = false;
 int angle = 0; //Ángulo/posición inicial del servo (0: Verde, 1: Amarillo, 2: Rojo)
 int selectedColor = 0; //Variable para guardar el color seleccionado
 
+// Configuracion de 'sensortemperatura' feed
+AdafruitIO_Feed *sensortemperatura = io.feed("sensortemperatura");
+//Configuración de 'boton'
+AdafruitIO_Feed *boton = io.feed("boton");
+
 //Prototipos de funciones
-//******************************************************************************************************************
+//**************************************
 //Prototipo de función para readADC_Cal
 uint32_t readADC_Cal(int ADC_Raw) {
   esp_adc_cal_characteristics_t adc_chars;
@@ -62,8 +88,19 @@ uint32_t readADC_Cal(int ADC_Raw) {
   return esp_adc_cal_raw_to_voltage(ADC_Raw, &adc_chars);
 }
 
+void handleMessage(AdafruitIO_Data *data) {
+  /*if(data->toPinLevel() == HIGH)
+    //buttonPressed=true;
+  else*/
+    //buttonPressed=false;
+}
+
 void setup() {
   Serial.begin(115200);
+  io.connect();
+  while(io.status() < AIO_CONNECTED) {
+    delay(500);
+  }
   pinMode(BUTTON_PIN, INPUT_PULLUP); //Botón con resistencia de pull-up interna
 
   pinMode(LM35_GPIO_PIN, INPUT); //Inicialización del pin LM35
@@ -99,9 +136,13 @@ void setup() {
 //Inicialización de la posición inicial 
   ledcWrite(servoChannel, map(angle, 0, 180, 0, 65535));
   delay(1000); //Tiempo de espera de 1 segundo para la inicialización
+
+boton->onMessage(handleMessage);
+boton->get();
 }
 
 void loop() {
+  io.run();
   unsigned long currentTime = millis();
   int buttonState = digitalRead(BUTTON_PIN);
 
@@ -115,30 +156,34 @@ void loop() {
       digitalWrite(display2, LOW);
       digitalWrite(display3, LOW);
       desplegarValor(tempDecimalTens);
-      delay(5);
+      delay(1);
 
       digitalWrite(display1, LOW);
       digitalWrite(display2, HIGH);
       digitalWrite(display3, LOW);
       desplegarValor(tempDecimalUnits);
       desplegarPunto(true);
-      delay(5);
+      delay(1);
 
       digitalWrite(display1, LOW);
       digitalWrite(display2, LOW);
       digitalWrite(display3, HIGH);
       desplegarValor(tempDecimal);
       desplegarPunto(false);
-      delay(5);
+      delay(1);
 
-
-  if (digitalRead(BUTTON_PIN) == LOW) {
+  if ((digitalRead(BUTTON_PIN) == LOW)){
     if (!buttonPressed) {
       buttonPressed = true;
 
       // Lectura del valor LM35_ADC
       TempC = ((analogRead(LM35_GPIO_PIN) + 70) * (5000.0/ 4096.0)); // Sumatoria de un valor OFFSET (factor de correción) para el valor análogo original multiplicado por el voltaje de 5V por pin Vin para la fórmula dividido la resolución ADC de 12bits
       TempC = TempC / 10.0; // División dentro de 10 representando los 10mV del LM35 ya que cada cambio de 10mV representa un cambio de 1℃
+      double Temperature = TempC; 
+      if (currentTime - previousMillis >= interval) {
+        previousMillis = currentTime;
+        sensortemperatura->save(Temperature);
+      }
 
       Serial.print(TempC); //Impresión de backup
       Serial.println();
@@ -149,23 +194,36 @@ void loop() {
         ledcWrite(redChannel, 0);
         ledcWrite(yellowChannel, 0);
         ledcWrite(greenChannel, 1);
+        ledcWrite(servoChannel, 1638+map(angle, 0, 180, 0, 6226));
       } else if (TempC >= 37.0 && TempC <= 37.5) {
         angle = 90;
         ledcWrite(redChannel, 0);
         ledcWrite(greenChannel, 0);
         ledcWrite(yellowChannel, 1);
+        ledcWrite(servoChannel, 1638+map(angle, 0, 180, 0, 6226));
       } else {
         angle = 130;
         ledcWrite(greenChannel, 0);
         ledcWrite(yellowChannel, 0);
-        ledcWrite(redChannel, 1);      
+        ledcWrite(redChannel, 1);
+        ledcWrite(servoChannel, 1638+map(angle, 0, 180, 0, 6226));      
 }
 
       ledcWrite(servoChannel, 1638+map(angle, 0, 180, 0, 6226)); //Mapeado con OFFSET en la diferencia de operación del rango del servo del 2% al 12% del Duty Cycle
     }
-  } else {
-    buttonPressed = false;
-  }
-}
+
+    }
+    
+    else
+    {buttonPressed = false;
+    }}
+
+
+
+
+
+
+
+
 
 
