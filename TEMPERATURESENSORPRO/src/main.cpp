@@ -1,26 +1,9 @@
-//******************************************************************************************************************
+//**************
 //Dulce Nicole Monney Paiz, 21549
 //Proyecto 1 – Sensor de temperatura
 //BE3029 - Electrónica Digital 2
 //Librerías 
-//******************************************************************************************************************
-#include <Arduino.h>
-#include <esp_adc_cal.h>
-#include "display7.h"
-#include <driver/ledc.h>
-
-//Definiciones
-//******************************************************************************************************************
-//Definiciones del sensor LM35
-#define LM35_GPIO_PIN 35
-#define BUTTON_PIN 33 //Botón para grabar la lectura actual de temperatura
-int LM35_Input = 0;
-floa//**************************************
-//Dulce Nicole Monney Paiz, 21549
-//Proyecto 1 – Sensor de temperatura
-//BE3029 - Electrónica Digital 2
-//Librerías 
-//**************************************
+//**************
 #include <Arduino.h>
 #include <esp_adc_cal.h>
 #include "display7.h"
@@ -29,7 +12,7 @@ floa//**************************************
 #include "config.h"
 
 //Definiciones
-//**************************************
+//**************
 //Definiciones del sensor LM35
 #define LM35_GPIO_PIN 35
 #define BUTTON_PIN 33 //Botón para grabar la lectura actual de temperatura
@@ -73,6 +56,7 @@ const long interval = 500;
 //Variables generales
 int angle = 0; //Ángulo/posición inicial del servo (0: Verde, 1: Amarillo, 2: Rojo)
 int selectedColor = 0; //Variable para guardar el color seleccionado
+int BotonAdafruit=0;
 
 // Configuracion de 'sensortemperatura' feed
 AdafruitIO_Feed *sensortemperatura = io.feed("sensortemperatura");
@@ -80,7 +64,7 @@ AdafruitIO_Feed *sensortemperatura = io.feed("sensortemperatura");
 AdafruitIO_Feed *boton = io.feed("boton");
 
 //Prototipos de funciones
-//**************************************
+//**************
 //Prototipo de función para readADC_Cal
 uint32_t readADC_Cal(int ADC_Raw) {
   esp_adc_cal_characteristics_t adc_chars;
@@ -89,10 +73,10 @@ uint32_t readADC_Cal(int ADC_Raw) {
 }
 
 void handleMessage(AdafruitIO_Data *data) {
-  /*if(data->toPinLevel() == HIGH)
-    //buttonPressed=true;
-  else*/
-    //buttonPressed=false;
+  if(data->toPinLevel() == HIGH)
+    BotonAdafruit=1;
+  else
+    BotonAdafruit=0;
 }
 
 void setup() {
@@ -156,21 +140,24 @@ void loop() {
       digitalWrite(display2, LOW);
       digitalWrite(display3, LOW);
       desplegarValor(tempDecimalTens);
-      delay(1);
+      delayMicroseconds(16000);
+      //delay(10);
 
       digitalWrite(display1, LOW);
       digitalWrite(display2, HIGH);
       digitalWrite(display3, LOW);
       desplegarValor(tempDecimalUnits);
       desplegarPunto(true);
-      delay(1);
+      delayMicroseconds(16000);
+      //delay(10);
 
       digitalWrite(display1, LOW);
       digitalWrite(display2, LOW);
       digitalWrite(display3, HIGH);
       desplegarValor(tempDecimal);
       desplegarPunto(false);
-      delay(1);
+      delayMicroseconds(16000);
+      //delay(10);
 
   if ((digitalRead(BUTTON_PIN) == LOW)){
     if (!buttonPressed) {
@@ -214,16 +201,50 @@ void loop() {
 
     }
     
-    else
-    {buttonPressed = false;
-    }}
+//Botón de control en Adafruit
+ if (BotonAdafruit){
+   
+      BotonAdafruit = 0;
 
+      // Lectura del valor LM35_ADC
+      TempC = ((analogRead(LM35_GPIO_PIN) + 70) * (5000.0/ 4096.0)); // Sumatoria de un valor OFFSET (factor de correción) para el valor análogo original multiplicado por el voltaje de 5V por pin Vin para la fórmula dividido la resolución ADC de 12bits
+      TempC = TempC / 10.0; // División dentro de 10 representando los 10mV del LM35 ya que cada cambio de 10mV representa un cambio de 1℃
+      double Temperature = TempC; 
+      if (currentTime - previousMillis >= interval) {
+        previousMillis = currentTime;
+        sensortemperatura->save(Temperature);
+      }
 
+      Serial.print(TempC); //Impresión de backup
+      Serial.println();
 
+      // Condicionales para el comportamiento de los LEDs y el servo
+      if (TempC < 37.0) {
+        angle = 45;
+        ledcWrite(redChannel, 0);
+        ledcWrite(yellowChannel, 0);
+        ledcWrite(greenChannel, 1);
+        ledcWrite(servoChannel, 1638+map(angle, 0, 180, 0, 6226));
+      } else if (TempC >= 37.0 && TempC <= 37.5) {
+        angle = 90;
+        ledcWrite(redChannel, 0);
+        ledcWrite(greenChannel, 0);
+        ledcWrite(yellowChannel, 1);
+        ledcWrite(servoChannel, 1638+map(angle, 0, 180, 0, 6226));
+      } else {
+        angle = 130;
+        ledcWrite(greenChannel, 0);
+        ledcWrite(yellowChannel, 0);
+        ledcWrite(redChannel, 1);
+        ledcWrite(servoChannel, 1638+map(angle, 0, 180, 0, 6226));      
+}
 
+      ledcWrite(servoChannel, 1638+map(angle, 0, 180, 0, 6226)); //Mapeado con OFFSET en la diferencia de operación del rango del servo del 2% al 12% del Duty Cycle
+    }
 
-
-
-
+    else {
+    buttonPressed = false;
+    }
+}
 
 
