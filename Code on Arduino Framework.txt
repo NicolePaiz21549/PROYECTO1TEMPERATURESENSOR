@@ -2,6 +2,7 @@
 //Dulce Nicole Monney Paiz, 21549
 //Proyecto 1 – Sensor de temperatura
 //BE3029 - Electrónica Digital 2
+//Actualización realizada para presentación del Proyecto
 //Librerías 
 //**************
 #include <Arduino.h>
@@ -58,7 +59,7 @@ int angle = 0; //Ángulo/posición inicial del servo (0: Verde, 1: Amarillo, 2: 
 int selectedColor = 0; //Variable para guardar el color seleccionado
 int BotonAdafruit=0;
 
-// Configuracion de 'sensortemperatura' feed
+//Configuracion de 'sensortemperatura' feed
 AdafruitIO_Feed *sensortemperatura = io.feed("sensortemperatura");
 //Configuración de 'boton'
 AdafruitIO_Feed *boton = io.feed("boton");
@@ -66,9 +67,9 @@ AdafruitIO_Feed *boton = io.feed("boton");
 //Prototipos de funciones
 //**************
 //Prototipo de función para readADC_Cal
-uint32_t readADC_Cal(int ADC_Raw) {
-  esp_adc_cal_characteristics_t adc_chars;
-  esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars);
+uint32_t readADC_Cal(int ADC_Raw) { 
+  esp_adc_cal_characteristics_t adc_chars; 
+  esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_DB_11, ADC_WIDTH_BIT_12, 1100, &adc_chars); 
   return esp_adc_cal_raw_to_voltage(ADC_Raw, &adc_chars);
 }
 
@@ -126,7 +127,7 @@ boton->get();
 }
 
 void loop() {
-  io.run();
+  
   unsigned long currentTime = millis();
   int buttonState = digitalRead(BUTTON_PIN);
 
@@ -161,6 +162,7 @@ void loop() {
 
   if ((digitalRead(BUTTON_PIN) == LOW)){
     if (!buttonPressed) {
+      io.run();
       buttonPressed = true;
 
       // Lectura del valor LM35_ADC
@@ -176,13 +178,13 @@ void loop() {
       Serial.println();
 
       // Condicionales para el comportamiento de los LEDs y el servo
-      if (TempC < 37.0) {
+      if (TempC < 24.0) { //Estaba en 37
         angle = 45;
         ledcWrite(redChannel, 0);
         ledcWrite(yellowChannel, 0);
         ledcWrite(greenChannel, 1);
         ledcWrite(servoChannel, 1638+map(angle, 0, 180, 0, 6226));
-      } else if (TempC >= 37.0 && TempC <= 37.5) {
+      } else if (TempC >= 24.1 && TempC <=25.0) { //TempC >= 37.0 && TempC <= 37.5
         angle = 90;
         ledcWrite(redChannel, 0);
         ledcWrite(greenChannel, 0);
@@ -219,13 +221,13 @@ void loop() {
       Serial.println();
 
       // Condicionales para el comportamiento de los LEDs y el servo
-      if (TempC < 37.0) {
+      if (TempC < 25) { //TempC < 37.0
         angle = 45;
         ledcWrite(redChannel, 0);
         ledcWrite(yellowChannel, 0);
         ledcWrite(greenChannel, 1);
         ledcWrite(servoChannel, 1638+map(angle, 0, 180, 0, 6226));
-      } else if (TempC >= 37.0 && TempC <= 37.5) {
+      } else if (TempC >= 25.0 && TempC <= 26.0) { //TempC >= 37.0 && TempC <= 37.5
         angle = 90;
         ledcWrite(redChannel, 0);
         ledcWrite(greenChannel, 0);
@@ -246,5 +248,3 @@ void loop() {
     buttonPressed = false;
     }
 }
-
-
